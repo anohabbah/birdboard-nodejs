@@ -1,0 +1,10 @@
+{
+  "database": {
+    "driver": "DB_CONNECTION",
+    "host": "DB_HOST",
+    "port": "DB_PORT",
+    "username": "DB_USERNAME",
+    "password": "DB_PASSWORD",
+    "name": "DB_DATABASE"
+  }
+}

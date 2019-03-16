@@ -1,8 +1,11 @@
 require('dotenv').config();
+require(__dirname + '/models');
 const startupDebugger = require('debug')('app:startup');
-const dbDebugger = require('debug')('app:db');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const projectsRouter = require(__dirname + '/routes/projects');
+const usersRouter = require(__dirname + '/routes/users');
+
 const express = require('express');
 const app = express();
 
@@ -13,7 +16,9 @@ if (app.get('env') === 'development') {
   app.use(morgan('tiny'));
   startupDebugger('morgan enabled...');
 }
-dbDebugger();
+
+app.use('/api/users', usersRouter);
+app.use('/api/projects', projectsRouter);
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello, World !');

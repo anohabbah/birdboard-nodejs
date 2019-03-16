@@ -1,22 +1,52 @@
 module.exports = {
   development: {
-    username: process.env.DB_USERNAME,
+    dialect: process.env.DB_CONNECTION || 'mysql',
+    username: process.env.DB_USERNAME || 'root',
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_CONNECTION,
-    port: process.env.DB_PORT
+    database: process.env.DB_DATABASE || 'birdboard',
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    operatorsAliases: false,
+    define: {
+      underscored: true,
+      freezeTableName: false,
+      charset: 'utf8',
+      dialectOptions: {
+        collate: 'utf8_general_ci'
+      },
+      timestamps: true
+    }
   },
   test: {
     database: ':memory:',
-    dialect: 'sqlite'
+    dialect: 'sqlite',
+    operatorsAliases: false,
+    define: {
+      underscored: true,
+      freezeTableName: false,
+      charset: 'utf8',
+      dialectOptions: {
+        collate: 'utf8_general_ci'
+      },
+      timestamps: true
+    }
   },
   production: {
+    dialect: process.env.DB_CONNECTION,
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    dialect: process.env.DB_CONNECTION,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
+    operatorsAliases: false,
+    define: {
+      underscored: true,
+      freezeTableName: false,
+      charset: 'utf8',
+      dialectOptions: {
+        collate: 'utf8_general_ci'
+      },
+      timestamps: true
+    }
   }
 };

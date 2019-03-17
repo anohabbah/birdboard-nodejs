@@ -1,4 +1,4 @@
-const Joi = require('Joi');
+const Joi = require('joi');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const express = require('express');
@@ -32,8 +32,10 @@ function validate(request) {
  */
 function validateAuth(req) {
   const rules = {
-    email: Joi.email().required(),
-    password: Joi.required()
+    email: Joi.string()
+      .email()
+      .required(),
+    password: Joi.string().required()
   };
 
   return Joi.validate(req, rules);
@@ -63,9 +65,11 @@ router.post('/login', async (req, res) => {
   if (!user) return res.status(400).send('Email or password invalid.');
 
   const valid = await bcrypt.compare(req.body.password, user.password);
-  if (valid) return res.status(400).send('Email or password invalid.');
+  if (!valid) return res.status(400).send('Email or password invalid.');
 
-  res.send(true);
+  res
+    .header('x-auth-token', user.token)
+    .json(_.pick(user, ['id', 'name', 'email']));
 });
 
 module.exports = router;

@@ -1,39 +1,39 @@
 const request = require('supertest');
-const { sequelize } = require('../models');
+const { sequelize, Project } = require('../models');
 const app = require('../app');
 
 const apiUrl = '/api/projects';
 
 describe('ProjectsTest', function() {
-  beforeAll(() => {
-    sequelize.sync({ force: true });
+  beforeEach(async () => {
+    await sequelize.sync({ force: true });
   });
 
-  it('should response to the GET method', function() {
-    return request(app)
-      .get(apiUrl)
-      .then((response) => {
-        expect(response.statusCode).toBe(200);
-      });
+  it('should respond to the GET /projects', async function() {
+    const response = await request(app).get(apiUrl);
+    expect(response.statusCode).toBe(200);
   });
 
-  it('should create a project', function() {
-    return request(app)
+  it('should read projects', async function() {
+    const project = await Project.create({
+      title: `project`,
+      description: `description`
+    });
+
+    const response = await request(app).get(apiUrl);
+    expect(response.body).toEqual(
+      expect.arrayContaining([JSON.parse(JSON.stringify(project))])
+    );
+  });
+
+  it('should create a project', async function() {
+    const body = { title: 'test title', description: 'test description' };
+
+    const res = await request(app)
       .post(apiUrl)
-      .send({
-        title: 'My super project title',
-        description: 'My super project description'
-      })
-      .set('Content-Type', 'application/json')
-      .then(() => {
-        return request(app)
-          .get(apiUrl)
-          .then((response) => {
-            exports(response).contains({
-              title: 'My super project title',
-              description: 'My super project description'
-            });
-          });
-      });
+      .send(body);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toEqual(expect.objectContaining(body));
   });
 });

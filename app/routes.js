@@ -1,8 +1,9 @@
 const express = require('express');
 const helmet = require('helmet');
+const error = require(__dirname + '/../middleware/error');
 
-const projectsRouter = require(__dirname + '/routes/projects');
-const usersRouter = require(__dirname + '/routes/users');
+const projectsRouter = require(__dirname + '/../routes/projects');
+const usersRouter = require(__dirname + '/../routes/users');
 
 module.exports = function(app) {
   app.use(express.json());

@@ -9,5 +9,5 @@ const logger = createLogger({
 
 module.exports = (err, req, res, next) => {
   logger.error(err.message);
-  res.status(500).send('Something went wrong', err);
+  res.status(500).send('Something went wrong');
 };

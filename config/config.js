@@ -20,6 +20,7 @@ module.exports = {
   test: {
     database: ':memory:',
     dialect: 'sqlite',
+    logging: false,
     operatorsAliases: false,
     define: {
       underscored: true,
@@ -38,6 +39,7 @@ module.exports = {
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
+    logging: false,
     operatorsAliases: false,
     define: {
       underscored: true,

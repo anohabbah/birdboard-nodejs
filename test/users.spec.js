@@ -125,9 +125,16 @@ describe('ProjectsTest', function() {
   });
 
   it('should fail if the email doesnt exist', async function() {
+    const body = {
+      name: 'John Doe',
+      email: 'john@doe.test',
+      password: hashedPassword
+    };
+    await User.create(body);
+
     const res = await request(app)
       .post('/api/users/login')
-      .send({ email: 'test@test.com' });
+      .send({ email: 'test@test.com', password });
 
     expect(res.status).toBe(400);
   });

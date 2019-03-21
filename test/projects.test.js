@@ -10,8 +10,8 @@ describe('ProjectsTest', function() {
   });
 
   it('should respond to the GET /projects', async function() {
-    const response = await request(app).get(apiUrl);
-    expect(response.statusCode).toBe(200);
+    const res = await request(app).get(apiUrl);
+    expect(res.status).toBe(200);
   });
 
   it('should read projects', async function() {
@@ -20,8 +20,8 @@ describe('ProjectsTest', function() {
       description: `description`
     });
 
-    const response = await request(app).get(apiUrl);
-    expect(response.body).toEqual(
+    const res = await request(app).get(apiUrl);
+    expect(res.body).toEqual(
       expect.arrayContaining([JSON.parse(JSON.stringify(project))])
     );
   });
@@ -33,7 +33,37 @@ describe('ProjectsTest', function() {
       .post(apiUrl)
       .send(body);
 
-    expect(res.statusCode).toBe(201);
+    expect(res.status).toBe(201);
     expect(res.body).toEqual(expect.objectContaining(body));
+  });
+
+  it('should return 400 if title is not provided', async function() {
+    const body = { description: 'test description' };
+
+    const res = await request(app)
+      .post(apiUrl)
+      .send(body);
+
+    expect(res.status).toBe(400);
+  });
+
+  it('should return 400 if description is not provided', async function() {
+    const body = { title: 'test title' };
+
+    const res = await request(app)
+      .post(apiUrl)
+      .send(body);
+
+    expect(res.status).toBe(400);
+  });
+
+  it('should return 400 if title and description are not provided', async function() {
+    const body = {};
+
+    const res = await request(app)
+      .post(apiUrl)
+      .send(body);
+
+    expect(res.status).toBe(400);
   });
 });

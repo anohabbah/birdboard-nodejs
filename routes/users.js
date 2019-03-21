@@ -30,7 +30,7 @@ function validate(request) {
  * @param {Object} req
  * @return {*}
  */
-function validateAuth(req) {
+function validateAuthRequest(req) {
   const rules = {
     email: Joi.string()
       .email()
@@ -58,7 +58,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { error } = validateAuth(req.body);
+  const { error } = validateAuthRequest(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const user = await User.findOne({ where: { email: req.body.email } });

@@ -34,10 +34,38 @@ router.post('/', async (req, res) => {
   res.status(201).json(project);
 });
 
-router.get('/:project', (req, res) => {});
+router.get('/:projectId', async (req, res) => {
+  const { projectId } = req.params;
 
-router.patch('/:project', (req, res) => {});
+  const project = await Project.findByPk(projectId);
+  if (!project) return res.status(404).send('Resource not found');
 
-router.delete('/:project', (req, res) => {});
+  res.status(200).json(project);
+});
+
+router.patch('/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const project = await Project.findByPk(projectId);
+  if (!project) return res.status(404).send('Resource not found');
+
+  const { error } = validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const { title, description } = req.body;
+
+  await project.update({ title, description });
+
+  res.status(200).json(project);
+});
+
+router.delete('/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const project = await Project.findByPk(projectId);
+  if (!project) return res.status(404).send('Resource not found');
+
+  await project.destroy();
+
+  res.status(200).json(project);
+});
 
 module.exports = router;

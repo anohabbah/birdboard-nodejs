@@ -1,3 +1,4 @@
+const Faker = require('faker');
 const request = require('supertest');
 const _ = require('lodash');
 const { sequelize, Project } = require('../../models');
@@ -16,10 +17,12 @@ describe('ProjectsTest', function() {
   });
 
   it('should read projects', async function() {
-    const project = await Project.create({
-      title: `project`,
-      description: `description`
-    });
+    const body = {
+      title: Faker.lorem.sentence(),
+      description: Faker.lorem.paragraph()
+    };
+    let project = await Project.create(body);
+    project = await project.setOwner(null);
 
     const res = await request(app).get(apiUrl);
     expect(res.body).toEqual(
@@ -27,8 +30,11 @@ describe('ProjectsTest', function() {
     );
   });
 
-  it('should create a project', async function() {
-    const body = { title: 'test title', description: 'test description' };
+  it('should create a project only if user is authenticated', async function() {
+    const body = {
+      title: Faker.lorem.sentence(),
+      description: Faker.lorem.paragraph()
+    };
 
     const res = await request(app)
       .post(apiUrl)
@@ -69,14 +75,17 @@ describe('ProjectsTest', function() {
   });
 
   it('should get a single project', async function() {
-    const project = await Project.create({
-      title: `project`,
-      description: `description`
-    });
+    const body = {
+      title: Faker.lorem.sentence(),
+      description: Faker.lorem.paragraph()
+    };
+    const project = await Project.create(body);
 
     const res = await request(app).get(`${apiUrl}/${project.id}`);
 
-    expect(res.body).toEqual(JSON.parse(JSON.stringify(project)));
+    expect(res.body).toEqual(
+      expect.objectContaining(JSON.parse(JSON.stringify(project)))
+    );
   });
 
   it('should return 404 if any project found', async function() {

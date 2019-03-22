@@ -2,6 +2,7 @@ const Joi = require('joi');
 const express = require('express');
 const { Project } = require('../models');
 const router = express.Router();
+const authGuard = require('../middleware/auth');
 
 /**
  * Validate request.
@@ -19,13 +20,13 @@ function validate(req) {
   return Joi.validate(req, rules);
 }
 
-router.get('/', async (req, res) => {
+router.get('/', authGuard, async (req, res) => {
   const projects = await Project.findAll();
 
   res.json(projects);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authGuard, async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
   res.status(201).json(project);
 });
 
-router.get('/:projectId', async (req, res) => {
+router.get('/:projectId', authGuard, async (req, res) => {
   const { projectId } = req.params;
 
   const project = await Project.findByPk(projectId);
@@ -43,7 +44,7 @@ router.get('/:projectId', async (req, res) => {
   res.status(200).json(project);
 });
 
-router.patch('/:projectId', async (req, res) => {
+router.patch('/:projectId', authGuard, async (req, res) => {
   const { projectId } = req.params;
   const project = await Project.findByPk(projectId);
   if (!project) return res.status(404).send('Resource not found');
@@ -58,7 +59,7 @@ router.patch('/:projectId', async (req, res) => {
   res.status(200).json(project);
 });
 
-router.delete('/:projectId', async (req, res) => {
+router.delete('/:projectId', authGuard, async (req, res) => {
   const { projectId } = req.params;
   const project = await Project.findByPk(projectId);
   if (!project) return res.status(404).send('Resource not found');

@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
 const request = require('supertest');
 const _ = require('lodash');
-const { sequelize, User } = require('../models');
-const app = require('../app');
+const { sequelize, User } = require('../../models');
+const app = require('../../app');
 
 let salt;
 let hashedPassword;

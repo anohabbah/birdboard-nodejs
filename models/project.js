@@ -17,8 +17,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  Project.associate = function(models) {
+  Project.associate = function({ User }) {
     // associations can be defined here
+    Project.belongsTo(User, {
+      foreignKey: 'owner_id',
+      onDelete: 'cascade',
+      as: 'Owner'
+    });
   };
 
   return Project;

@@ -1,4 +1,4 @@
-const Faker = require('faker');
+const faker = require('faker');
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
@@ -6,29 +6,30 @@ const { sequelize, Project, User } = require('../../models');
 const app = require('../../app');
 
 describe('Manage Projects Test', function() {
-  Faker.locale = 'fr';
+  faker.locale = 'fr';
   let token;
   let attributes;
   const apiUrl = '/api/projects';
   const password = '123456';
   let hashedPassword;
+  let user;
 
   beforeEach(async () => {
     await sequelize.sync({ force: true });
 
     const salt = await bcrypt.genSalt(10);
     hashedPassword = await bcrypt.hash(password, salt);
-    const user = await User.create({
-      name: Faker.name.findName(),
-      email: Faker.internet.email(),
+    user = await User.create({
+      name: faker.name.findName(),
+      email: faker.internet.email(),
       password: hashedPassword
     });
 
     token = user.token;
 
     attributes = {
-      title: Faker.lorem.sentence(),
-      description: Faker.lorem.paragraph()
+      title: faker.lorem.sentence(),
+      description: faker.lorem.paragraph()
     };
   });
 
@@ -47,8 +48,8 @@ describe('Manage Projects Test', function() {
 
     it('should read projects only if user is authenticated', async function() {
       const body = {
-        title: Faker.lorem.sentence(),
-        description: Faker.lorem.paragraph()
+        title: faker.lorem.sentence(),
+        description: faker.lorem.paragraph()
       };
       let project = await Project.create(body);
       project = await project.setOwner(null);
@@ -149,6 +150,14 @@ describe('Manage Projects Test', function() {
   });
 
   describe('PATCH /api/projects/:projectId', () => {
+    let url;
+    let params;
+    let project;
+    beforeEach(async () => {
+      project = await Project.create(attributes);
+      await project.setOwner(user);
+    });
+
     const exec = async () => {
       return await request(app)
         .patch(url)
@@ -156,17 +165,24 @@ describe('Manage Projects Test', function() {
         .send(params);
     };
 
-    let url;
-    let params;
-    let project;
-    beforeEach(async () => {
-      project = await Project.create(attributes);
-    });
-
     it('should avoid unauthenticated users', async function() {
       const res = await request(app).patch(apiUrl + '/1');
 
       expect(res.status).toBe(401);
+    });
+
+    it('should not update a project if you are not the project owner', async () => {
+      const anotherUser = await User.create({
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      });
+
+      url = `${apiUrl}/${project.id}`;
+      token = anotherUser.token;
+      const res = await exec();
+
+      expect(res.status).toBe(403);
     });
 
     it('should update an existing project', async function() {

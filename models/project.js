@@ -22,6 +22,9 @@ module.exports = (sequelize, DataTypes) => {
       getterMethods: {
         path() {
           return '/api/projects/' + this.getDataValue('id');
+        },
+        ownerId() {
+          return this.getDataValue('owner_id');
         }
       }
     }

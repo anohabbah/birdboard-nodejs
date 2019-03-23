@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const express = require('express');
-const { Project } = require('../models');
+const { Project, Task } = require('../models');
 const router = express.Router();
 const authGuard = require('../middleware/auth');
 
@@ -49,6 +49,8 @@ router.patch('/:projectId', authGuard, async (req, res) => {
   const project = await Project.findByPk(projectId);
   if (!project) return res.status(404).send('Resource not found');
 
+  if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
+
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -67,6 +69,27 @@ router.delete('/:projectId', authGuard, async (req, res) => {
   await project.destroy();
 
   res.status(200).json(project);
+});
+
+// Tasks
+router.post('/:projectId/tasks', authGuard, async (req, res) => {
+  const { error } = Joi.validate(req.body, {
+    body: Joi.string()
+      .max(255)
+      .required()
+  });
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const { projectId } = req.params;
+
+  const project = await Project.findByPk(projectId);
+
+  const { body } = req.body;
+
+  const task = await Task.create({ body });
+  await task.setProject(project);
+
+  res.status(200).send();
 });
 
 module.exports = router;

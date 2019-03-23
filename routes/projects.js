@@ -82,7 +82,8 @@ function validateTaskRequest(req) {
   return Joi.validate(req, {
     body: Joi.string()
       .max(255)
-      .required()
+      .required(),
+    completed: Joi.boolean()
   });
 }
 
@@ -122,6 +123,10 @@ router.patch('/:projectId/tasks/:taskId', authGuard, async (req, res) => {
   const { body } = req.body;
 
   await task.update({ body });
+
+  if (req.body.completed) task.complete = true;
+  else task.incomplete = false;
+  await task.save();
 
   res.status(200).send();
 });

@@ -138,5 +138,27 @@ describe('Project Tasks', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('should be complete', async () => {
+      params.completed = true;
+      await exec();
+
+      task = await Task.findByPk(task.id);
+      expect(task.completed).toBeTruthy();
+    });
+
+    it('should be incomplete', async () => {
+      params.completed = true;
+      await exec();
+
+      task = await Task.findByPk(task.id);
+      expect(task.completed).toBeTruthy();
+
+      params.completed = false;
+      await exec();
+
+      task = await Task.findByPk(task.id);
+      expect(task.completed).toBeFalsy();
+    });
   });
 });

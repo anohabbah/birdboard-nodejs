@@ -21,38 +21,83 @@ describe('Project Tasks', () => {
       description: faker.lorem.paragraph()
     });
 
-    user = User.build({
+    user = await User.create({
       name: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password()
     });
 
+    await project.setOwner(user);
+
     token = user.token;
-  });
 
-  const exec = async () => {
-    return request(app)
-      .post(url)
-      .set('x-auth-token', token)
-      .send(params);
-  };
-
-  it('a project can have tasks ', async () => {
     params = { body: faker.lorem.word() };
     url = '/api/projects/' + project.id + '/tasks';
-    await exec();
-
-    const task = await Task.findOne({ where: params });
-    const tasks = await project.getTasks();
-
-    expect(task).toBeTruthy();
-    expect(tasks).toEqual(expect.arrayContaining([task]));
   });
 
-  it('task body is required', async () => {
-    params = {};
-    const res = await exec();
+  describe('POST /api/projects/:projectId/tasks', () => {
+    const exec = async () => {
+      return request(app)
+        .post(url)
+        .set('x-auth-token', token)
+        .send(params);
+    };
 
-    expect(res.status).toBe(400);
+    it('a project can have tasks ', async () => {
+      await exec();
+
+      const task = await Task.findOne({ where: params });
+      const tasks = await project.getTasks();
+
+      expect(task).toBeTruthy();
+      expect(tasks).toEqual(expect.arrayContaining([task]));
+    });
+
+    it('task body is required', async () => {
+      params = {};
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should not add a task to a project when you are not the owner', async () => {
+      const anotherUser = await User.create({
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      });
+      token = anotherUser.token;
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('PATCH /api/projects/:projectId/tasks/:taskId', () => {
+    let task;
+    beforeEach(async () => {
+      task = await Task.create(params);
+      task = await task.setProject(project);
+    });
+
+    const exec = async () => {
+      return request(app)
+        .patch(url)
+        .set('x-auth-token', token)
+        .send(params);
+    };
+
+    it('should not update a task to a project when you are not the owner', async () => {
+      const anotherUser = await User.create({
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      });
+      token = anotherUser.token;
+      url = task.path;
+      const res = await exec();
+
+      expect(res.status).toBe(403);
+    });
   });
 });

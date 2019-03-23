@@ -73,6 +73,12 @@ router.delete('/:projectId', authGuard, async (req, res) => {
 
 // Tasks
 router.post('/:projectId/tasks', authGuard, async (req, res) => {
+  const { projectId } = req.params;
+
+  const project = await Project.findByPk(projectId);
+
+  if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
+
   const { error } = Joi.validate(req.body, {
     body: Joi.string()
       .max(255)
@@ -80,9 +86,27 @@ router.post('/:projectId/tasks', authGuard, async (req, res) => {
   });
   if (error) return res.status(400).send(error.details[0].message);
 
-  const { projectId } = req.params;
+  const { body } = req.body;
+
+  const task = await Task.create({ body });
+  await task.setProject(project);
+
+  res.status(200).send();
+});
+
+router.patch('/:projectId/tasks/:taskId', authGuard, async (req, res) => {
+  const { projectId, taskId } = req.params;
 
   const project = await Project.findByPk(projectId);
+
+  if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
+
+  const { error } = Joi.validate(req.body, {
+    body: Joi.string()
+      .max(255)
+      .required()
+  });
+  if (error) return res.status(400).send(error.details[0].message);
 
   const { body } = req.body;
 

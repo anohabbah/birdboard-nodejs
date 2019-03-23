@@ -25,7 +25,6 @@ module.exports = {
         endOfLine: 'crlf'
       },
     ],
-    'new-cap': ['error', {capIsNew: false}],
-    camelCase: ['error', "always"]
+    'new-cap': ['error', {capIsNew: false}]
   },
 };

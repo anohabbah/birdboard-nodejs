@@ -113,5 +113,12 @@ describe('Project Tasks', () => {
 
       expect(res.status).toBe(404);
     });
+
+    it('should avoid updating a task when the task doesnt exist', async () => {
+      url = '/api/projects/1/tasks/2';
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+    });
   });
 });

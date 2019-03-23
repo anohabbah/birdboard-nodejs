@@ -5,7 +5,7 @@ const _ = require('lodash');
 const { sequelize, User } = require('../../models');
 const app = require('../../app');
 
-describe('ProjectsTest', function() {
+describe('Registration and Login', function() {
   let salt;
   let hashedPassword;
   const password = '123456789';

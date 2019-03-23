@@ -1,5 +1,4 @@
 const Faker = require('faker');
-const _ = require('lodash');
 const bcrypt = require('bcrypt');
 
 const { sequelize, User, Project, Task } = require(__dirname + '/../../models');

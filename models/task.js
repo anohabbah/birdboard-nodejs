@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       getterMethods: {
+        projectId() {
+          return this.getDataValue('project_id');
+        },
         path() {
           return [
             '',

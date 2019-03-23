@@ -120,5 +120,17 @@ describe('Project Tasks', () => {
 
       expect(res.status).toBe(404);
     });
+
+    it('should be updated', async () => {
+      params = { body: 'updated' };
+      url = task.path;
+      await exec();
+
+      task = await Task.findOne({ where: params });
+      const tasks = await project.getTasks();
+
+      expect(task).toBeTruthy();
+      expect(tasks).toEqual(expect.arrayContaining([task]));
+    });
   });
 });

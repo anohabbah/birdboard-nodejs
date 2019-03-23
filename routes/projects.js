@@ -72,6 +72,20 @@ router.delete('/:projectId', authGuard, async (req, res) => {
 });
 
 // Tasks
+
+/**
+ *
+ * @param {Object} req
+ * @return {*}
+ */
+function validateTaskRequest(req) {
+  return Joi.validate(req, {
+    body: Joi.string()
+      .max(255)
+      .required()
+  });
+}
+
 router.post('/:projectId/tasks', authGuard, async (req, res) => {
   const { projectId } = req.params;
 
@@ -80,11 +94,7 @@ router.post('/:projectId/tasks', authGuard, async (req, res) => {
 
   if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
 
-  const { error } = Joi.validate(req.body, {
-    body: Joi.string()
-      .max(255)
-      .required()
-  });
+  const { error } = validateTaskRequest(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const { body } = req.body;
@@ -106,16 +116,12 @@ router.patch('/:projectId/tasks/:taskId', authGuard, async (req, res) => {
   const task = await Task.findByPk(taskId);
   if (!task) return res.status(404).send('Resource not found');
 
-  const { error } = Joi.validate(req.body, {
-    body: Joi.string()
-      .max(255)
-      .required()
-  });
+  const { error } = validateTaskRequest(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const { body } = req.body;
 
-  await Task.update({ body });
+  await task.update({ body });
 
   res.status(200).send();
 });

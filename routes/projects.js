@@ -99,8 +99,11 @@ router.patch('/:projectId/tasks/:taskId', authGuard, async (req, res) => {
   const { projectId, taskId } = req.params;
 
   const project = await Project.findByPk(projectId);
+  if (!project) return res.status(404).send('Resource not found');
 
   if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
+
+  const task = await Task.findByPk(taskId);
 
   const { error } = Joi.validate(req.body, {
     body: Joi.string()
@@ -111,8 +114,8 @@ router.patch('/:projectId/tasks/:taskId', authGuard, async (req, res) => {
 
   const { body } = req.body;
 
-  const task = await Task.create({ body });
-  await task.setProject(project);
+  // const task = await Task.create({ body });
+  // await task.setProject(project);
 
   res.status(200).send();
 });

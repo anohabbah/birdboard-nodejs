@@ -107,8 +107,11 @@ describe('Project Tasks', () => {
       expect(res.status).toBe(403);
     });
 
-    it('should avoid updating a task when the project doesnt exist', () => {
+    it('should avoid updating a task when the project doesnt exist', async () => {
+      url = '/api/projects/3/tasks/2';
+      const res = await exec();
 
+      expect(res.status).toBe(404);
     });
   });
 });

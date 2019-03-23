@@ -22,7 +22,7 @@ module.exports = {
         singleQuote: true,
         semi: true,
         arrowParens: 'always',
-        endOfLine: 'lf'
+        endOfLine: 'crlf'
       },
     ],
     'new-cap': ['error', {capIsNew: false}]

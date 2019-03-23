@@ -1,28 +1,31 @@
 const Faker = require('faker');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
-const { sequelize, User, Project } = require(__dirname + '/../../models');
 
-Faker.locale = 'fr';
-const password = '123456';
-let hashedPassword;
+const { sequelize, User, Project, Task } = require(__dirname + '/../../models');
 
-describe('Projects Test', function() {
+describe('Project', () => {
+  let project;
+  Faker.locale = 'fr';
+  const password = '123456';
+  let hashedPassword;
+
   beforeEach(async () => {
-    const salt = await bcrypt.genSalt(10);
-    hashedPassword = await bcrypt.hash(password, salt);
     await sequelize.sync({ force: true });
+
+    project = await Project.create({
+      title: Faker.lorem.sentence(),
+      description: Faker.lorem.paragraph()
+    });
   });
 
-  it('should have an owner', async function() {
+  it('should belong to an owner', async () => {
+    const salt = await bcrypt.genSalt(10);
+    hashedPassword = await bcrypt.hash(password, salt);
     const user = await User.create({
       name: Faker.name.findName(),
       email: Faker.internet.email(),
       password: hashedPassword
-    });
-    const project = await Project.create({
-      title: Faker.lorem.sentence(),
-      description: Faker.lorem.paragraph()
     });
 
     let projectOwner = await project.getOwner();
@@ -32,8 +35,21 @@ describe('Projects Test', function() {
     await project.setOwner(user);
     projectOwner = await project.getOwner();
 
-    expect(projectOwner).toEqual(
-      expect.objectContaining(_.pick(user, ['id', 'name', 'email']))
+    expect(projectOwner).toBeInstanceOf(User);
+  });
+
+  it('should have a path', () => {
+    expect(project.path).toBe('/api/projects/' + project.id);
+  });
+
+  it('should add a task', async () => {
+    let task = await Task.create({ body: Faker.lorem.sentence() });
+    await project.addTask(task);
+
+    const tasks = await project.getTasks();
+    task = await Task.findByPk(task.id);
+    expect(JSON.parse(JSON.stringify(tasks))).toEqual(
+      expect.arrayContaining([JSON.parse(JSON.stringify(task))])
     );
   });
 });

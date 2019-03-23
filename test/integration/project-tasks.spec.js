@@ -71,6 +71,13 @@ describe('Project Tasks', () => {
 
       expect(res.status).toBe(403);
     });
+
+    it('should avoid adding a task when the project doesnt exist', async () => {
+      url = '/api/projects/3/tasks';
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+    });
   });
 
   describe('PATCH /api/projects/:projectId/tasks/:taskId', () => {
@@ -98,6 +105,10 @@ describe('Project Tasks', () => {
       const res = await exec();
 
       expect(res.status).toBe(403);
+    });
+
+    it('should avoid updating a task when the project doesnt exist', () => {
+
     });
   });
 });

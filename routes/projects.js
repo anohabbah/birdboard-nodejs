@@ -76,6 +76,7 @@ router.post('/:projectId/tasks', authGuard, async (req, res) => {
   const { projectId } = req.params;
 
   const project = await Project.findByPk(projectId);
+  if (!project) return res.status(404).send('Resource not found');
 
   if (req.user.id !== project.ownerId) return res.status(403).send('Forbidden');
 

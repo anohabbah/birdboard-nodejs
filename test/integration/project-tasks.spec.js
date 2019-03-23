@@ -85,6 +85,7 @@ describe('Project Tasks', () => {
     beforeEach(async () => {
       task = await Task.create(params);
       task = await task.setProject(project);
+      url = task.path;
     });
 
     const exec = async () => {
@@ -101,7 +102,6 @@ describe('Project Tasks', () => {
         password: faker.internet.password()
       });
       token = anotherUser.token;
-      url = task.path;
       const res = await exec();
 
       expect(res.status).toBe(403);
@@ -123,7 +123,6 @@ describe('Project Tasks', () => {
 
     it('should be updated', async () => {
       params = { body: 'updated' };
-      url = task.path;
       await exec();
 
       task = await Task.findOne({ where: params });
@@ -131,6 +130,13 @@ describe('Project Tasks', () => {
 
       expect(task).toBeTruthy();
       expect(tasks).toEqual(expect.arrayContaining([task]));
+    });
+
+    it('should require body', async () => {
+      params = {};
+      const res = await exec();
+
+      expect(res.status).toBe(400);
     });
   });
 });

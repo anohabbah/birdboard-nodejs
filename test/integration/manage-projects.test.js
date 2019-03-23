@@ -5,41 +5,47 @@ const _ = require('lodash');
 const { sequelize, Project, User } = require('../../models');
 const app = require('../../app');
 
-const apiUrl = '/api/projects';
-
-Faker.locale = 'fr';
-const password = '123456';
-let hashedPassword;
-
 describe('Manage Projects Test', function() {
+  Faker.locale = 'fr';
+  let token;
+  let attributes;
+  const apiUrl = '/api/projects';
+  const password = '123456';
+  let hashedPassword;
+
   beforeEach(async () => {
+    await sequelize.sync({ force: true });
+
     const salt = await bcrypt.genSalt(10);
     hashedPassword = await bcrypt.hash(password, salt);
-    await sequelize.sync({ force: true });
+    const user = await User.create({
+      name: Faker.name.findName(),
+      email: Faker.internet.email(),
+      password: hashedPassword
+    });
+
+    token = user.token;
+
+    attributes = {
+      title: Faker.lorem.sentence(),
+      description: Faker.lorem.paragraph()
+    };
   });
 
   describe('GET /api/projects', function() {
-    it('should respond to the GET /projects', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const res = await request(app)
+    const exec = async () => {
+      return await request(app)
         .get(apiUrl)
-        .set('x-auth-token', user.token);
+        .set('x-auth-token', token);
+    };
+
+    it('should respond to the GET /projects', async function() {
+      const res = await exec();
 
       expect(res.status).toBe(200);
     });
 
     it('should read projects only if user is authenticated', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
       const body = {
         title: Faker.lorem.sentence(),
         description: Faker.lorem.paragraph()
@@ -47,9 +53,7 @@ describe('Manage Projects Test', function() {
       let project = await Project.create(body);
       project = await project.setOwner(null);
 
-      const res = await request(app)
-        .get(apiUrl)
-        .set('x-auth-token', user.token);
+      const res = await exec();
 
       expect(res.body).toEqual(
         expect.arrayContaining([JSON.parse(JSON.stringify(project))])
@@ -64,6 +68,13 @@ describe('Manage Projects Test', function() {
   });
 
   describe('POST /api/projects', () => {
+    const exec = async () => {
+      return await request(app)
+        .post(apiUrl)
+        .set('x-auth-token', token)
+        .send(attributes);
+    };
+
     it('should avoid unauthenticated users', async function() {
       const res = await request(app).post(apiUrl);
 
@@ -71,79 +82,46 @@ describe('Manage Projects Test', function() {
     });
 
     it('should create a project only if user is authenticated', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: Faker.lorem.sentence(),
-        description: Faker.lorem.paragraph()
-      };
-
-      const res = await request(app)
-        .post(apiUrl)
-        .set('x-auth-token', user.token)
-        .send(body);
+      const res = await exec();
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual(expect.objectContaining(body));
+      expect(res.body).toEqual(expect.objectContaining(attributes));
     });
 
     it('should return 400 if title is not provided', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
+      attributes = { description: 'test description' };
 
-      const body = { description: 'test description' };
-
-      const res = await request(app)
-        .post(apiUrl)
-        .set('x-auth-token', user.token)
-        .send(body);
+      const res = await exec();
 
       expect(res.status).toBe(400);
     });
 
     it('should return 400 if description is not provided', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
+      attributes = { title: 'test title' };
 
-      const body = { title: 'test title' };
-
-      const res = await request(app)
-        .post(apiUrl)
-        .set('x-auth-token', user.token)
-        .send(body);
+      const res = await exec();
 
       expect(res.status).toBe(400);
     });
 
     it('should return 400 if title and description are not provided', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
+      attributes = {};
 
-      const body = {};
-
-      const res = await request(app)
-        .post(apiUrl)
-        .set('x-auth-token', user.token)
-        .send(body);
+      const res = await exec();
 
       expect(res.status).toBe(400);
     });
   });
 
   describe('GET /api/projects/:projectId', () => {
+    let endpoint;
+
+    const exec = async () => {
+      return await request(app)
+        .get(endpoint)
+        .set('x-auth-token', token);
+    };
+
     it('should avoid unauthenticated users', async function() {
       const res = await request(app).get(apiUrl + '/1');
 
@@ -151,21 +129,9 @@ describe('Manage Projects Test', function() {
     });
 
     it('should get a single project', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: Faker.lorem.sentence(),
-        description: Faker.lorem.paragraph()
-      };
-      const project = await Project.create(body);
-
-      const res = await request(app)
-        .get(`${apiUrl}/${project.id}`)
-        .set('x-auth-token', user.token);
+      const project = await Project.create(attributes);
+      endpoint = `${apiUrl}/${project.id}`;
+      const res = await exec();
 
       expect(res.body).toEqual(
         expect.objectContaining(JSON.parse(JSON.stringify(project)))
@@ -173,26 +139,30 @@ describe('Manage Projects Test', function() {
     });
 
     it('should return 404 if any project found', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
+      await Project.create(attributes);
 
-      await Project.create({
-        title: `project`,
-        description: `description`
-      });
-
-      const res = await request(app)
-        .get(`${apiUrl}/2`)
-        .set('x-auth-token', user.token);
+      endpoint = `${apiUrl}/2`;
+      const res = await exec();
 
       expect(res.status).toBe(404);
     });
   });
 
   describe('PATCH /api/projects/:projectId', () => {
+    const exec = async () => {
+      return await request(app)
+        .patch(url)
+        .set('x-auth-token', token)
+        .send(params);
+    };
+
+    let url;
+    let params;
+    let project;
+    beforeEach(async () => {
+      project = await Project.create(attributes);
+    });
+
     it('should avoid unauthenticated users', async function() {
       const res = await request(app).patch(apiUrl + '/1');
 
@@ -200,25 +170,11 @@ describe('Manage Projects Test', function() {
     });
 
     it('should update an existing project', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
+      url = `${apiUrl}/${project.id}`;
+      params = { title: 'title updated', description: 'description updated' };
+      const res = await exec();
 
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      let project = await Project.create(body);
       project = JSON.parse(JSON.stringify(project));
-
-      const res = await request(app)
-        .patch(`${apiUrl}/${project.id}`)
-        .set('x-auth-token', user.token)
-        .send({ title: 'title updated', description: 'description updated' });
-
       expect(res.body).toEqual(
         expect.objectContaining(
           _.pick(
@@ -233,73 +189,44 @@ describe('Manage Projects Test', function() {
     });
 
     it('should return 404 when updating if any project found', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      await Project.create(body);
-
-      const res = await request(app)
-        .patch(`${apiUrl}/2`)
-        .set('x-auth-token', user.token)
-        .send({ title: 'title updated' });
+      params = null;
+      url = `${apiUrl}/${project.id}`;
+      url = apiUrl + '/2';
+      const res = await exec();
 
       expect(res.status).toBe(404);
     });
 
     it('should return 400 when updating if description is missing', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      const project = await Project.create(body);
-
-      const res = await request(app)
-        .patch(`${apiUrl}/${project.id}`)
-        .set('x-auth-token', user.token)
-        .send({ title: 'title updated' });
+      params = { title: 'title updated' };
+      url = `${apiUrl}/${project.id}`;
+      const res = await exec();
 
       expect(res.status).toBe(400);
     });
 
     it('should return 400 when updating if title is missing', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      const project = await Project.create(body);
-
-      const res = await request(app)
-        .patch(`${apiUrl}/${project.id}`)
-        .set('x-auth-token', user.token)
-        .send({ description: 'description updated' });
+      params = { description: 'description updated' };
+      url = `${apiUrl}/${project.id}`;
+      const res = await exec();
 
       expect(res.status).toBe(400);
     });
   });
 
   describe('DELETE /api/projects/:projectId', () => {
+    let url;
+    let project;
+    beforeEach(async () => {
+      project = await Project.create(attributes);
+    });
+
+    const exec = async () => {
+      return await request(app)
+        .delete(url)
+        .set('x-auth-token', token);
+    };
+
     it('should avoid unauthenticated users', async function() {
       const res = await request(app).delete(apiUrl + '/1');
 
@@ -307,25 +234,12 @@ describe('Manage Projects Test', function() {
     });
 
     it('should delete an existing project', async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      await Project.create(body);
-      await Project.create(body);
-      let project = await Project.create(body);
+      await Project.create(attributes);
+      await Project.create(attributes);
       project = JSON.parse(JSON.stringify(project));
 
-      const res = await request(app)
-        .delete(`${apiUrl}/${project.id}`)
-        .set('x-auth-token', user.token);
+      url = `${apiUrl}/${project.id}`;
+      const res = await exec();
 
       const projects = await Project.findAll();
 
@@ -337,22 +251,8 @@ describe('Manage Projects Test', function() {
     });
 
     it("should return 404 when deleting a project that doesn't exist", async function() {
-      const user = await User.create({
-        name: Faker.name.findName(),
-        email: Faker.internet.email(),
-        password: hashedPassword
-      });
-
-      const body = {
-        title: `project`,
-        description: `description`
-      };
-
-      await Project.create(body);
-
-      const res = await request(app)
-        .delete(`${apiUrl}/2`)
-        .set('x-auth-token', user.token);
+      url = `${apiUrl}/2`;
+      const res = await exec();
 
       expect(res.status).toBe(404);
     });

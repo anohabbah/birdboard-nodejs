@@ -11,16 +11,19 @@ const { User } = require(__dirname + '/../models');
  * @return {*}
  */
 function validate(request) {
-  const rules = {
-    name: Joi.string().required(),
+  const rules = Joi.object().keys({
+    name: Joi.string()
+      .min(3)
+      .max(255)
+      .required(),
     email: Joi.string()
-      .email()
+      .email({ minDomainAtoms: 2 })
       .required(),
     password: Joi.string()
       .min(6)
       .max(255)
       .required()
-  };
+  });
 
   return Joi.validate(request, rules);
 }
@@ -31,12 +34,12 @@ function validate(request) {
  * @return {*}
  */
 function validateAuthRequest(req) {
-  const rules = {
+  const rules = Joi.object().keys({
     email: Joi.string()
       .email()
       .required(),
     password: Joi.string().required()
-  };
+  });
 
   return Joi.validate(req, rules);
 }
@@ -54,7 +57,7 @@ router.post('/register', async (req, res) => {
     _.assign({ password: hashedPassword }, _.pick(req.body, ['name', 'email']))
   );
 
-  res.json(_.pick(user, ['id', 'name', 'email']));
+  res.status(201).json(_.pick(user, ['id', 'name', 'email']));
 });
 
 router.post('/login', async (req, res) => {

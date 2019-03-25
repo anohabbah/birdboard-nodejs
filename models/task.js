@@ -33,10 +33,17 @@ module.exports = (sequelize, DataTypes) => {
         incomplete(value) {
           this.setDataValue('completed', value);
         }
+      },
+      hooks: {
+        async afterCreate(model) {
+          console.log(model.projectId);
+          const project = await model.getProject();
+          if (project) console.log(project.associations);
+        }
       }
     }
   );
-  Task.associate = function({ Project, Activity }) {
+  Task.associate = function({ Project }) {
     Task.belongsTo(Project, { as: 'Project', onDelete: 'cascade' });
   };
 

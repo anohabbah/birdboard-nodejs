@@ -1,4 +1,3 @@
-const request = require('supertest');
 const _ = require('lodash');
 const faker = require('faker');
 const { sequelize, Project, Task, Activity } = require('../../models');
@@ -15,22 +14,40 @@ describe('Activity Trigger', () => {
     });
   });
 
-  it('should trigger activity when creating a project', async () => {
-    const projectActivities = await project.getActivities();
+  describe('For Project', () => {
+    it('when creating a project', async () => {
+      const projectActivities = await project.getActivities();
 
-    expect(projectActivities.length).toBe(1);
-    expect('created_project').toBe(_.first(projectActivities).description);
+      expect(projectActivities.length).toBe(1);
+      expect('created_project').toBe(_.first(projectActivities).description);
+    });
+
+    it('when updating a project', async () => {
+      await project.update(
+        { title: faker.lorem.sentence() },
+        { individualHooks: true }
+      );
+
+      const projectActivities = await project.getActivities();
+
+      expect(projectActivities.length).toBe(2);
+      expect('updated_project').toBe(_.last(projectActivities).description);
+    });
   });
 
-  it('should trigger activity when updating a project', async () => {
-    await project.update(
-      { title: faker.lorem.sentence() },
-      { individualHooks: true }
-    );
+  describe('For Task', () => {
+    let task;
 
-    const projectActivities = await project.getActivities();
+    beforeEach(async () => {
+      task = await Task.create({ body: faker.lorem.sentence() });
+      task.setProject(project);
+    });
 
-    expect(projectActivities.length).toBe(2);
-    expect('updated_project').toBe(_.last(projectActivities).description);
+    it('when creating a task', async () => {
+      const projectActivities = await project.getActivities();
+
+      expect(projectActivities.length).toBe(2);
+      expect('created_task').toBe(_.last(projectActivities).description);
+    });
   });
 });

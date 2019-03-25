@@ -28,7 +28,6 @@ module.exports = (sequelize, DataTypes) => {
   Activity.associate = function({ User, Project, Task }) {
     Activity.belongsTo(User, { as: 'User' });
     Activity.belongsTo(Project, { as: 'Project' });
-    Activity.belongsTo(Task, { foreignKey: 'subject_id' });
   };
   return Activity;
 };

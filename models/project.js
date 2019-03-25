@@ -26,6 +26,16 @@ module.exports = (sequelize, DataTypes) => {
         ownerId() {
           return this.getDataValue('owner_id');
         }
+      },
+      hooks: {
+        async afterCreate(model, options) {
+          const activity = await this.associations['Activities'].target.create({
+            description: 'created_project',
+            subject_id: model.id,
+            subject_type: 'Project'
+          });
+          await model.addActivity(activity);
+        }
       }
     }
   );
@@ -38,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Project.hasMany(Task, { onDelete: 'cascade', as: 'Tasks' });
-    Project.hasMany(Activity, { onDelete: 'cascade', as: 'Activity' });
+    Project.hasMany(Activity, { onDelete: 'cascade', as: 'Activities' });
   };
 
   return Project;

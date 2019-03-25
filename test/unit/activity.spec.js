@@ -9,7 +9,7 @@ describe('Activity', () => {
     await sequelize.sync({ force: true });
   });
 
-  it('should belong to a user', async () => {
+  it('should belong to an user', async () => {
     const user = await User.create({
       name: faker.name.findName(),
       email: faker.internet.email(),
@@ -28,7 +28,7 @@ describe('Activity', () => {
     activity = await activity.setProject(project);
     activity = await activity.setUser(user);
 
-    expect(activity.user_id).toBeTruthy();
+    expect(activity.user_id).toBeDefined();
 
     const activityUser = await activity.getUser();
     expect(activityUser.id).toBe(user.id);

@@ -28,9 +28,17 @@ module.exports = (sequelize, DataTypes) => {
         }
       },
       hooks: {
-        async afterCreate(model, options) {
+        async afterCreate(model) {
           const activity = await this.associations['Activities'].target.create({
             description: 'created_project',
+            subject_id: model.id,
+            subject_type: 'Project'
+          });
+          await model.addActivity(activity);
+        },
+        async afterUpdate(model) {
+          const activity = await this.associations['Activities'].target.create({
+            description: 'updated_project',
             subject_id: model.id,
             subject_type: 'Project'
           });

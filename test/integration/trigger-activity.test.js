@@ -21,4 +21,16 @@ describe('Activity Trigger', () => {
     expect(projectActivities.length).toBe(1);
     expect('created_project').toBe(_.first(projectActivities).description);
   });
+
+  it('should trigger activity when updating a project', async () => {
+    await project.update(
+      { title: faker.lorem.sentence() },
+      { individualHooks: true }
+    );
+
+    const projectActivities = await project.getActivities();
+
+    expect(projectActivities.length).toBe(2);
+    expect('updated_project').toBe(_.last(projectActivities).description);
+  });
 });

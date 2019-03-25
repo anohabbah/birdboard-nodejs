@@ -30,8 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Project.associate = function({ User, Task }) {
-    // associations can be defined here
+  Project.associate = function({ User, Task, Activity }) {
     Project.belongsTo(User, {
       foreignKey: 'owner_id',
       onDelete: 'cascade',
@@ -39,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Project.hasMany(Task, { onDelete: 'cascade', as: 'Tasks' });
+    Project.hasMany(Activity, { onDelete: 'cascade', as: 'Activity' });
   };
 
   return Project;

@@ -36,8 +36,13 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   );
-  Task.associate = function({ Project }) {
+  Task.associate = function({ Project, Activity }) {
     Task.belongsTo(Project, { as: 'Project', onDelete: 'cascade' });
+    Task.hasMany(Activity, {
+      foreignKey: 'subject_id',
+      as: 'Activity',
+      onDelete: 'cascade'
+    });
   };
 
   return Task;

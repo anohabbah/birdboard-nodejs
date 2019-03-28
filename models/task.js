@@ -36,9 +36,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       hooks: {
         async afterCreate(model) {
-          console.log(model.projectId);
-          const project = await model.getProject();
-          if (project) console.log(project.associations);
+          const act = await sequelize.models['Activity'].create({
+            description: 'created_task',
+            subject_type: 'Task',
+            subject_id: model.id,
+            project_id: model.project_id
+          });
+          console.log(act);
         }
       }
     }

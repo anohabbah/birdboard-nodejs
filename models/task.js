@@ -12,32 +12,29 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       getterMethods: {
-        projectId() {
-          return this.getDataValue('project_id');
-        },
         path() {
           return [
             '',
             'api',
             'projects',
-            this.getDataValue('project_id'),
+            this.get('projectId'),
             'tasks',
-            this.getDataValue('id')
+            this.get('id')
           ].join('/');
         }
       },
       setterMethods: {
         complete(value) {
-          this.setDataValue('completed', value);
+          this.set('completed', value);
         },
         incomplete(value) {
-          this.setDataValue('completed', value);
+          this.set('completed', value);
         }
       }
     }
   );
   Task.associate = function({ Project }) {
-    Task.belongsTo(Project, { as: 'Project', onDelete: 'cascade' });
+    Task.belongsTo(Project, { as: 'project', onDelete: 'cascade' });
   };
 
   return Task;

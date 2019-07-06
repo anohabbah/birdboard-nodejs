@@ -6,7 +6,7 @@ module.exports = {
     database: process.env.DB_DATABASE || 'birdboard',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
-    operatorsAliases: false,
+    // operatorsAliases: false,
     define: {
       underscored: true,
       freezeTableName: false,
@@ -21,7 +21,7 @@ module.exports = {
     database: ':memory:',
     dialect: 'sqlite',
     logging: false,
-    operatorsAliases: false,
+    // operatorsAliases: false,
     define: {
       underscored: true,
       freezeTableName: false,
@@ -40,7 +40,7 @@ module.exports = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     logging: false,
-    operatorsAliases: false,
+    // operatorsAliases: false,
     define: {
       underscored: true,
       freezeTableName: false,

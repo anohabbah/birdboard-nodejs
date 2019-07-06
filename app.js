@@ -1,6 +1,6 @@
 require('express-async-errors');
 require('dotenv').config();
-require(__dirname + '/models'); // start db
+const db = require(__dirname + '/models'); // start db
 const startupDebugger = require('debug')('app:startup');
 const morgan = require('morgan');
 
@@ -14,6 +14,6 @@ if (process.env.NODE_ENV === 'development') {
 
 require('./app/logging');
 require('./app/config')();
-require('./app/routes')(app);
+require('./app/routes')(db, app);
 
 module.exports = app;

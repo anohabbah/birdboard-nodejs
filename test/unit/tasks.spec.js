@@ -27,7 +27,7 @@ describe('Task', () => {
       description: faker.lorem.paragraph()
     });
     await project.addTask(task);
-    task = await Task.findByPk(task.id); // refresh the model
+    await task.reload();
 
     expect(task.path).toBe('/api/projects/' + project.id + '/tasks/' + task.id);
   });

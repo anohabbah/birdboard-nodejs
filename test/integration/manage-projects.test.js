@@ -51,8 +51,8 @@ describe('Manage Projects Test', function() {
         title: faker.lorem.sentence(),
         description: faker.lorem.paragraph()
       };
-      let project = await Project.create(body);
-      project = await project.setOwner(null);
+      const project = await Project.create(body);
+      await project.reload();
 
       const res = await exec();
 
@@ -131,6 +131,7 @@ describe('Manage Projects Test', function() {
 
     it('should get a single project', async function() {
       const project = await Project.create(attributes);
+      await project.reload();
       endpoint = `${apiUrl}/${project.id}`;
       const res = await exec();
 
@@ -252,6 +253,7 @@ describe('Manage Projects Test', function() {
     it('should delete an existing project', async function() {
       await Project.create(attributes);
       await Project.create(attributes);
+      await project.reload();
       project = JSON.parse(JSON.stringify(project));
 
       url = `${apiUrl}/${project.id}`;

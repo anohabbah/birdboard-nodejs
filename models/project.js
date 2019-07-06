@@ -1,4 +1,5 @@
 'use strict';
+
 module.exports = (sequelize, DataTypes) => {
   const Project = sequelize.define(
     'Project',
@@ -21,10 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       getterMethods: {
         path() {
-          return '/api/projects/' + this.getDataValue('id');
-        },
-        ownerId() {
-          return this.getDataValue('owner_id');
+          return '/api/projects/' + this.get('id');
         }
       }
     }
@@ -33,12 +31,11 @@ module.exports = (sequelize, DataTypes) => {
   Project.associate = function({ User, Task }) {
     // associations can be defined here
     Project.belongsTo(User, {
-      foreignKey: 'owner_id',
       onDelete: 'cascade',
-      as: 'Owner'
+      as: 'owner'
     });
 
-    Project.hasMany(Task, { onDelete: 'cascade', as: 'Tasks' });
+    Project.hasMany(Task, { onDelete: 'cascade', as: 'tasks' });
   };
 
   return Project;
